@@ -14,13 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          invoice_number: string
+          last_name: string
+          package_id: string
+          payment_status: string | null
+          physical_address: string
+          total_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          invoice_number: string
+          last_name: string
+          package_id: string
+          payment_status?: string | null
+          physical_address: string
+          total_amount: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          invoice_number?: string
+          last_name?: string
+          package_id?: string
+          payment_status?: string | null
+          physical_address?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registrations_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
