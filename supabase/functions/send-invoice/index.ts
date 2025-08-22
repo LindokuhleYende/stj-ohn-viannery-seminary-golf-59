@@ -1,3 +1,4 @@
+/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "npm:resend@2.0.0";
@@ -177,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email with invoice
     const emailResponse = await resend.emails.send({
-      from: "St John's Golf Day <golf@stjohnvianney.org>",
+      from: "St John's Golf Day <onboarding@resend.dev>",
       to: [registration.email],
       subject: `Golf Day Registration Invoice - ${registration.invoice_number}`,
       html: invoiceHtml,
