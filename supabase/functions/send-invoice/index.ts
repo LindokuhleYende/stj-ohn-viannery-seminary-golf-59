@@ -1,18 +1,16 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "npm:resend@2.0.0";
-import * as dotenv from "https://deno.land/std@0.203.0/dotenv/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
- const env = await dotenv.load();
- console.log(env.RESEND_API_KEY);
- const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
- console.log("RESEND_API_KEY:", Deno.env.get("RESEND_API_KEY"));
 
-// const resend = new Resend('re_EGTssy2A_K4k1yfvpwpFGEZ6iZzEev55f');
+//  const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+//  console.log("RESEND_API_KEY:", Deno.env.get("RESEND_API_KEY"));
+
+const resend = new Resend('re_EGTssy2A_K4k1yfvpwpFGEZ6iZzEev55f');
 
 interface InvoiceRequest {
   registrationId: string;
