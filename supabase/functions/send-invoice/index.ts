@@ -8,10 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const resendApiKey = Deno.env.get("RESEND_API_KEY");
-console.log("RESEND_API_KEY exists:", !!resendApiKey);
-console.log("RESEND_API_KEY length:", resendApiKey?.length || 0);
-const resend = new Resend(resendApiKey);
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 interface InvoiceRequest {
   registrationId: string;
@@ -180,6 +177,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send email with invoice
+    console.log("Sending email to:", registration.email);
     const emailResponse = await resend.emails.send({
       from: "St John's Golf Day <onboarding@resend.dev>",
       to: [registration.email],
@@ -187,7 +185,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: invoiceHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email response:", JSON.stringify(emailResponse, null, 2));
 
     return new Response(JSON.stringify({ 
       success: true, 
