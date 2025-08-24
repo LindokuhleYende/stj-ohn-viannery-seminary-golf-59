@@ -178,6 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send email with invoice
+    console.log("Sending email to:", registration.email);
     const emailResponse = await resend.emails.send({
       from: "St John's Golf Day <onboarding@resend.dev>",
       to: [registration.email],
@@ -185,7 +186,7 @@ const handler = async (req: Request): Promise<Response> => {
       html: invoiceHtml,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email response:", JSON.stringify(emailResponse, null, 2));
 
     return new Response(JSON.stringify({ 
       success: true, 
