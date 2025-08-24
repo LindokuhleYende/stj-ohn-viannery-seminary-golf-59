@@ -8,8 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const resend = new Resend('re_EGTssy2A_K4k1yfvpwpFGEZ6iZzEev55f');
+ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+// const resend = new Resend('re_EGTssy2A_K4k1yfvpwpFGEZ6iZzEev55f');
 
 interface InvoiceRequest {
   registrationId: string;
