@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 // const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const resend = new Resend('re_UsF4F7ya_NbcFfq817YHy7pKwkmZpnjK3');
+const resend = new Resend('re_EGTssy2A_K4k1yfvpwpFGEZ6iZzEev55f');
 
 interface InvoiceRequest {
   registrationId: string;
