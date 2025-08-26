@@ -53,8 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }).returning();
 
       // Insert players if provided
+      let playerRecords: any[] = [];
       if (playerData && playerData.length > 0) {
-        await db.insert(players).values(
+        playerRecords = await db.insert(players).values(
           playerData.map((player: any) => ({
             registration_id: newRegistration.id,
             player_name: player.player_name,
@@ -63,10 +64,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dietary_requirements: player.dietary_requirements,
             attending_gala_dinner: player.attending_gala_dinner
           }))
-        );
+        ).returning();
       }
 
-      res.json(newRegistration);
+      // Return complete registration data with players
+      res.json({
+        ...newRegistration,
+        players: playerRecords
+      });
     } catch (error) {
       console.error("Error creating registration:", error);
       res.status(500).json({ error: "Failed to create registration" });

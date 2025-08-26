@@ -23,6 +23,14 @@ interface InvoiceProps {
       description: string | null;
       price: string;
     };
+    players?: {
+      id: string;
+      player_name: string;
+      player_email?: string;
+      tshirt_size: string;
+      dietary_requirements?: string;
+      attending_gala_dinner: boolean;
+    }[];
   };
 }
 
@@ -87,6 +95,32 @@ const Invoice = ({ registration }: InvoiceProps) => {
                 </tbody>
               </table>
             </div>
+            
+            ${registration.players && registration.players.length > 0 ? `
+            <div class="player-details" style="margin-bottom: 20px;">
+              <h3>Player Details:</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Player Name</th>
+                    <th>T-Shirt Size</th>
+                    <th>Dietary Requirements</th>
+                    <th>Gala Dinner</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${registration.players.map(player => `
+                    <tr>
+                      <td>${player.player_name}</td>
+                      <td>${player.tshirt_size}</td>
+                      <td>${player.dietary_requirements || 'None specified'}</td>
+                      <td>${player.attending_gala_dinner ? 'Yes' : 'No'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
             
             <div class="total">
               <strong>Total Amount: R${parseFloat(registration.total_amount).toFixed(2)}</strong>
@@ -160,6 +194,38 @@ const Invoice = ({ registration }: InvoiceProps) => {
         </div>
 
         <Separator />
+
+        {registration.players && registration.players.length > 0 && (
+          <>
+            <div>
+              <h3 className="font-semibold mb-4">Player Details</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Player Name</th>
+                      <th className="px-4 py-2 text-left">T-Shirt Size</th>
+                      <th className="px-4 py-2 text-left">Dietary Requirements</th>
+                      <th className="px-4 py-2 text-left">Gala Dinner</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {registration.players.map((player, index) => (
+                      <tr key={player.id} className={index % 2 === 0 ? "bg-background" : "bg-muted/30"} data-testid={`player-row-${index}`}>
+                        <td className="px-4 py-3" data-testid={`player-name-${index}`}>{player.player_name}</td>
+                        <td className="px-4 py-3" data-testid={`player-tshirt-${index}`}>{player.tshirt_size}</td>
+                        <td className="px-4 py-3" data-testid={`player-dietary-${index}`}>{player.dietary_requirements || 'None specified'}</td>
+                        <td className="px-4 py-3" data-testid={`player-gala-${index}`}>{player.attending_gala_dinner ? 'Yes' : 'No'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <Separator />
+          </>
+        )}
 
         <div className="text-right">
           <p className="text-2xl font-bold">Total: R{parseFloat(registration.total_amount).toFixed(2)}</p>
