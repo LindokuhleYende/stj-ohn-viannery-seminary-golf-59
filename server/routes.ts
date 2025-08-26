@@ -6,8 +6,11 @@ import { packages, registrations, players } from "../shared/schema";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { Resend } from "resend";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize Resend
+  const resend = new Resend(process.env.RESEND_API_KEY);
   // Get all packages
   app.get("/api/packages", async (req, res) => {
     try {
@@ -109,11 +112,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Registration not found" });
       }
 
-      // For now, return success (email functionality would require external service)
+      // Get player details for this registration
+      const playerDetails = await db
+        .select()
+        .from(players)
+        .where(eq(players.registration_id, registrationId));
+
+      const reg = registration[0];
+
+      // Create player details table for email
+      const playerDetailsHtml = playerDetails.length > 0 ? `
+        <div style="margin: 20px 0;">
+          <h3>Player Details:</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: #f5f5f5;">
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Player Name</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">T-Shirt Size</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Dietary Requirements</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Gala Dinner</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${playerDetails.map(player => `
+                <tr>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${player.player_name}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${player.tshirt_size}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${player.dietary_requirements || 'None specified'}</td>
+                  <td style="padding: 8px; border: 1px solid #ddd;">${player.attending_gala_dinner ? 'Yes' : 'No'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '';
+
+      // Create HTML email content
+      const emailHtml = `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              .header { text-align: center; margin-bottom: 30px; }
+              .invoice-details { margin-bottom: 20px; }
+              .customer-details { margin-bottom: 20px; }
+              .package-details { margin-bottom: 20px; }
+              .payment-details { margin-top: 30px; padding: 15px; background: #f5f5f5; }
+              .total { font-size: 18px; font-weight: bold; margin-top: 20px; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>St John Vianney Seminary Golf Day</h1>
+              <h2>Invoice</h2>
+            </div>
+            
+            <div class="invoice-details">
+              <strong>Invoice Number:</strong> ${reg.invoice_number}<br>
+              <strong>Date:</strong> ${new Date(reg.created_at).toLocaleDateString()}<br>
+            </div>
+            
+            <div class="customer-details">
+              <h3>Customer Details:</h3>
+              <strong>Name:</strong> ${reg.contact_first_name} ${reg.contact_last_name}<br>
+              <strong>Email:</strong> ${reg.contact_email}<br>
+              <strong>Address:</strong> ${reg.company_address || ''}<br>
+            </div>
+            
+            <div class="package-details">
+              <h3>Package Details:</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>${reg.package_name}<br><small>${reg.package_description || ''}</small></td>
+                    <td>R${parseFloat(reg.total_amount).toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            ${playerDetailsHtml}
+            
+            <div class="total">
+              <strong>Total Amount: R${parseFloat(reg.total_amount).toFixed(2)}</strong>
+            </div>
+            
+            <div class="payment-details">
+              <h3>Payment Details:</h3>
+              <strong>Bank:</strong> Standard Bank<br>
+              <strong>Account Name:</strong> St John Vianney<br>
+              <strong>Account Number:</strong> 011801174<br>
+              <strong>Branch Code:</strong> 001245<br>
+              <strong>Reference:</strong> ${reg.contact_first_name} ${reg.contact_last_name}<br>
+              <br>
+              <em>Please use your name as the payment reference when making the payment.</em>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // Send email using Resend
+      const { data, error } = await resend.emails.send({
+        from: 'St John Vianney Golf Day <noreply@your-domain.com>',
+        to: [reg.contact_email],
+        subject: `Golf Day Registration Invoice - ${reg.invoice_number}`,
+        html: emailHtml,
+      });
+
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Failed to send invoice email" });
+      }
+
+      console.log("Email sent successfully:", data);
       res.json({ 
         success: true, 
         message: "Invoice sent successfully",
-        invoiceNumber: registration[0].invoice_number 
+        invoiceNumber: reg.invoice_number,
+        emailId: data?.id
       });
     } catch (error) {
       console.error("Error sending invoice:", error);
