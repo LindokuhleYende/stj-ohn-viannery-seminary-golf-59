@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Send email using Resend
       const { data, error } = await resend.emails.send({
-        from: 'St John Vianney Golf Day <onboarding@resend.dev>',
+        from: 'St John Vianney Golf Day <noreply@your-domain.com>',
         to: [reg.contact_email],
         subject: `Golf Day Registration Invoice - ${reg.invoice_number}`,
         html: emailHtml,
