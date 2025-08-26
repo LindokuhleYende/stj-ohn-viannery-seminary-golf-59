@@ -10,13 +10,13 @@ interface InvoiceProps {
     last_name: string;
     email: string;
     physical_address: string;
-    total_amount: number;
+    total_amount: string;
     invoice_number: string;
     created_at: string;
     packages: {
       name: string;
-      description: string;
-      price: number;
+      description: string | null;
+      price: string;
     };
   };
 }
@@ -71,14 +71,14 @@ const Invoice = ({ registration }: InvoiceProps) => {
                 <tbody>
                   <tr>
                     <td>${registration.packages.name}<br><small>${registration.packages.description}</small></td>
-                    <td>R${registration.total_amount.toFixed(2)}</td>
+                    <td>R${parseFloat(registration.total_amount).toFixed(2)}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             
             <div class="total">
-              <strong>Total Amount: R${registration.total_amount.toFixed(2)}</strong>
+              <strong>Total Amount: R${parseFloat(registration.total_amount).toFixed(2)}</strong>
             </div>
             
             <div class="payment-details">
@@ -141,7 +141,7 @@ const Invoice = ({ registration }: InvoiceProps) => {
                       <p className="text-sm text-muted-foreground">{registration.packages.description}</p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">R{registration.total_amount.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right">R{parseFloat(registration.total_amount).toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -151,7 +151,7 @@ const Invoice = ({ registration }: InvoiceProps) => {
         <Separator />
 
         <div className="text-right">
-          <p className="text-2xl font-bold">Total: R{registration.total_amount.toFixed(2)}</p>
+          <p className="text-2xl font-bold">Total: R{parseFloat(registration.total_amount).toFixed(2)}</p>
         </div>
 
         <Card className="bg-muted">

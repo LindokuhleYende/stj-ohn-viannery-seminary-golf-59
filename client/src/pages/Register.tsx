@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import Navigation from "@/components/Navigation";
 import RegistrationForm from "@/components/RegistrationForm";
 import Invoice from "@/components/Invoice";
@@ -15,24 +15,14 @@ const Register = () => {
 
   useEffect(() => {
     checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const checkUser = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUser(session.user);
+      const token = localStorage.getItem('auth_token');
+      const userStr = localStorage.getItem('user');
+      if (token && userStr) {
+        setUser(JSON.parse(userStr));
       } else {
         navigate("/auth");
       }
@@ -45,11 +35,14 @@ const Register = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    setUser(null);
     toast({
       title: "Logged out",
       description: "You have been logged out successfully.",
     });
+    navigate("/auth");
   };
 
   const handleRegistrationComplete = (data: any) => {

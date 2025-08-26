@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,22 +17,10 @@ const Auth = () => {
 
   useEffect(() => {
     // Check if user is already logged in
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/register");
-      }
-    };
-    checkUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/register");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      navigate("/register");
+    }
   }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -41,28 +29,23 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
+        const session = await api.login(email, password);
+        localStorage.setItem('auth_token', session.access_token);
+        localStorage.setItem('user', JSON.stringify(session.user));
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
+        navigate("/register");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/register`,
-          },
-        });
-        if (error) throw error;
+        const session = await api.signUp(email, password);
+        localStorage.setItem('auth_token', session.access_token);
+        localStorage.setItem('user', JSON.stringify(session.user));
         toast({
           title: "Account created",
-          description: "Please check your email to confirm your account.",
+          description: "You can now proceed with registration.",
         });
+        navigate("/register");
       }
     } catch (error: any) {
       toast({
