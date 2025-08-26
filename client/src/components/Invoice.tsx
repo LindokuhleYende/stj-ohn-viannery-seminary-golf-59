@@ -6,10 +6,15 @@ import { Download } from "lucide-react";
 interface InvoiceProps {
   registration: {
     id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    physical_address: string;
+    // Support both old and new field names for backward compatibility
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    physical_address?: string;
+    contact_first_name?: string;
+    contact_last_name?: string;
+    contact_email?: string;
+    company_address?: string;
     total_amount: string;
     invoice_number: string;
     created_at: string;
@@ -22,6 +27,12 @@ interface InvoiceProps {
 }
 
 const Invoice = ({ registration }: InvoiceProps) => {
+  // Helper functions to get field values, supporting both old and new field names
+  const getFirstName = () => registration.contact_first_name || registration.first_name || '';
+  const getLastName = () => registration.contact_last_name || registration.last_name || '';
+  const getEmail = () => registration.contact_email || registration.email || '';
+  const getAddress = () => registration.company_address || registration.physical_address || '';
+
   const handleDownload = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -54,9 +65,9 @@ const Invoice = ({ registration }: InvoiceProps) => {
             
             <div class="customer-details">
               <h3>Customer Details:</h3>
-              <strong>Name:</strong> ${registration.first_name} ${registration.last_name}<br>
-              <strong>Email:</strong> ${registration.email}<br>
-              <strong>Address:</strong> ${registration.physical_address}<br>
+              <strong>Name:</strong> ${getFirstName()} ${getLastName()}<br>
+              <strong>Email:</strong> ${getEmail()}<br>
+              <strong>Address:</strong> ${getAddress()}<br>
             </div>
             
             <div class="package-details">
@@ -87,7 +98,7 @@ const Invoice = ({ registration }: InvoiceProps) => {
               <strong>Account Name:</strong> St John Vianney<br>
               <strong>Account Number:</strong> 011801174<br>
               <strong>Branch Code:</strong> 001245<br>
-              <strong>Reference:</strong> ${registration.first_name} ${registration.last_name}<br>
+              <strong>Reference:</strong> ${getFirstName()} ${getLastName()}<br>
               <br>
               <em>Please use your name as the payment reference.</em>
             </div>
@@ -115,9 +126,9 @@ const Invoice = ({ registration }: InvoiceProps) => {
           
           <div>
             <h3 className="font-semibold mb-2">Customer Details</h3>
-            <p><strong>Name:</strong> {registration.first_name} {registration.last_name}</p>
-            <p><strong>Email:</strong> {registration.email}</p>
-            <p><strong>Address:</strong> {registration.physical_address}</p>
+            <p><strong>Name:</strong> {getFirstName()} {getLastName()}</p>
+            <p><strong>Email:</strong> {getEmail()}</p>
+            <p><strong>Address:</strong> {getAddress()}</p>
           </div>
         </div>
 
@@ -167,7 +178,7 @@ const Invoice = ({ registration }: InvoiceProps) => {
               </div>
               <div>
                 <p><strong>Branch Code:</strong> 001245</p>
-                <p><strong>Reference:</strong> {registration.first_name} {registration.last_name}</p>
+                <p><strong>Reference:</strong> {getFirstName()} {getLastName()}</p>
               </div>
             </div>
             <p className="mt-4 text-sm text-muted-foreground font-medium">

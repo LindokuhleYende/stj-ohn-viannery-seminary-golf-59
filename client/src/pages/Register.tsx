@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import Navigation from "@/components/Navigation";
-import RegistrationForm from "@/components/RegistrationForm";
+import PlayerRegistrationForm from "@/components/PlayerRegistrationForm";
 import Invoice from "@/components/Invoice";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -76,7 +76,7 @@ const Register = () => {
         </div>
 
         {!registrationData ? (
-          <RegistrationForm onRegistrationComplete={handleRegistrationComplete} />
+          <PlayerRegistrationForm onRegistrationComplete={handleRegistrationComplete} />
         ) : (
           <div className="space-y-6">
             <div className="text-center">

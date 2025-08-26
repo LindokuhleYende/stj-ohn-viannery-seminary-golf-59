@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { packages, registrations } from "../shared/schema";
+import { packages, registrations, players } from "../shared/schema";
 import { eq } from "drizzle-orm";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
@@ -23,29 +23,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/registrations", async (req, res) => {
     try {
       const {
-        first_name,
-        last_name,
-        email,
-        physical_address,
+        contact_first_name,
+        contact_last_name,
+        contact_email,
+        contact_phone,
+        company_name,
+        company_address,
         package_id,
         total_amount,
-        user_id
+        user_id,
+        players: playerData
       } = req.body;
 
       // Generate invoice number
       const invoiceNumber = await generateInvoiceNumber();
 
       const [newRegistration] = await db.insert(registrations).values({
-        first_name,
-        last_name,
-        email,
-        physical_address,
+        contact_first_name,
+        contact_last_name,
+        contact_email,
+        contact_phone,
+        company_name,
+        company_address,
         package_id,
         total_amount: String(total_amount),
         user_id: user_id || null,
         invoice_number: invoiceNumber,
         payment_status: "pending"
       }).returning();
+
+      // Insert players if provided
+      if (playerData && playerData.length > 0) {
+        await db.insert(players).values(
+          playerData.map((player: any) => ({
+            registration_id: newRegistration.id,
+            player_name: player.player_name,
+            player_email: player.player_email,
+            tshirt_size: player.tshirt_size,
+            dietary_requirements: player.dietary_requirements,
+            attending_gala_dinner: player.attending_gala_dinner
+          }))
+        );
+      }
 
       res.json(newRegistration);
     } catch (error) {
@@ -63,10 +82,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const registration = await db
         .select({
           id: registrations.id,
-          first_name: registrations.first_name,
-          last_name: registrations.last_name,
-          email: registrations.email,
-          physical_address: registrations.physical_address,
+          contact_first_name: registrations.contact_first_name,
+          contact_last_name: registrations.contact_last_name,
+          contact_email: registrations.contact_email,
+          contact_phone: registrations.contact_phone,
+          company_name: registrations.company_name,
+          company_address: registrations.company_address,
           total_amount: registrations.total_amount,
           invoice_number: registrations.invoice_number,
           payment_status: registrations.payment_status,

@@ -11,16 +11,29 @@ export interface Package {
 export interface Registration {
   id: string;
   user_id: string | null;
-  first_name: string;
-  last_name: string;
-  email: string;
-  physical_address: string;
+  contact_first_name: string;
+  contact_last_name: string;
+  contact_email: string;
+  contact_phone: string | null;
+  company_name: string | null;
+  company_address: string | null;
   package_id: string;
   total_amount: string;
   invoice_number: string;
   payment_status: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Player {
+  id: string;
+  registration_id: string;
+  player_name: string;
+  player_email: string | null;
+  tshirt_size: string;
+  dietary_requirements: string | null;
+  attending_gala_dinner: boolean | null;
+  created_at: string;
 }
 
 export interface AuthUser {
@@ -79,13 +92,22 @@ class ApiClient {
   }
 
   async createRegistration(data: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    physical_address: string;
+    contact_first_name: string;
+    contact_last_name: string;
+    contact_email: string;
+    contact_phone?: string;
+    company_name?: string;
+    company_address?: string;
     package_id: string;
     total_amount: number;
     user_id?: string;
+    players?: {
+      player_name: string;
+      player_email?: string;
+      tshirt_size: string;
+      dietary_requirements?: string;
+      attending_gala_dinner: boolean;
+    }[];
   }): Promise<Registration> {
     const response = await fetch(`${this.baseUrl}/registrations`, {
       method: 'POST',
